@@ -1,0 +1,10 @@
+terraform init
+terraform fmt
+terraform validate
+
+terraform plan -out=tfplan
+terraform apply "tfplan"
+
+terraform destroy
+
+aws secretsmanager delete-secret --secret-id prod/dynamo --region ap-south-1 --force-delete-without-recovery
