@@ -198,3 +198,4 @@ terraform.rc
 tfplan
 *.hcl
 *.exe
+.terraform
