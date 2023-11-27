@@ -7,6 +7,7 @@ from boto3.dynamodb.conditions import Key
 
 def lambda_handler(event, context):
 
+    response = ''
     try:
 
         dynamodb_credentials = get_secret()
@@ -20,9 +21,14 @@ def lambda_handler(event, context):
 
         table_name = 'CustomerOrders'
 
-        customer_id = event['queryStringParameters']['customer_id']
+        if event.get("queryStringParameters", None):
 
-        if customer_id:
+            customer_id = event['queryStringParameters'].get(
+                'customer_id', None)
+
+            if not customer_id:
+                raise ValueError('Missing customer_id in the request')
+
             customer = get_order_from_dynamodb(
                 dynamodb, table_name, customer_id)
 
@@ -33,10 +39,12 @@ def lambda_handler(event, context):
                 'body': json.dumps(customer, default=decimal_default)
             }
 
-            return response
-
         else:
-            raise ValueError('Missing customer in the event')
+            customer = get_order_from_dynamodb(dynamodb, table_name, None)
+            response = {
+                'statusCode': 200,
+                'body': json.dumps(customer, default=decimal_default)
+            }
 
     except Exception as e:
         response = {
@@ -51,11 +59,16 @@ def get_order_from_dynamodb(dynamodb, table_name, customer_id):
 
     table = dynamodb.Table(table_name)
 
-    filter_expression = Key('customer_id').eq(int(customer_id))
+    if customer_id:
 
-    response = table.scan(
-        FilterExpression=filter_expression
-    )
+        filter_expression = Key('customer_id').eq(int(customer_id))
+
+        response = table.scan(
+            FilterExpression=filter_expression
+        )
+
+    else:
+        response = table.scan()
 
     order = response.get('Items', None)
 
@@ -83,11 +96,8 @@ def get_secret():
             SecretId=secret_name
         )
     except ClientError as e:
-        # For a list of exceptions thrown, see
-        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
         raise e
 
-    # Decrypts secret using the associated KMS key.
     secret = get_secret_value_response['SecretString']
 
     return json.loads(secret)
