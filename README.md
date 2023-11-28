@@ -59,7 +59,7 @@ wait unitl all execution is complete
 - Go to AWS APi Gateway
 - Go to MyApi
 - Go to Stages
-- copy url eg (https://ha7aba3a1znzezwzdze.execute-api.ap-south-1.amazonaws.com/prod)
+- copy url (for eg :https://ha7aba3a1znzezwzdze.execute-api.ap-south-1.amazonaws.com/prod)
 
 ### Step 5 : 
 - single endpoint is used for GET and POST request i.e. /order
