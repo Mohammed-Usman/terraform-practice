@@ -14,7 +14,7 @@ provider "aws" {
 
 # IAM roles
 resource "aws_iam_role" "lambda_post_role" {
-  name = "lambda-post-role"
+  name               = "lambda-post-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -32,7 +32,7 @@ EOF
 }
 
 resource "aws_iam_role" "lambda_get_role" {
-  name = "lambda-get-role"
+  name               = "lambda-get-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -165,19 +165,19 @@ resource "aws_sqs_queue" "stock_queue" {
 # Lambda triggers
 resource "aws_lambda_event_source_mapping" "process_order_trigger" {
   event_source_arn = aws_sqs_queue.process_queue.arn
-  function_name   = aws_lambda_function.process_order_lambda.arn
+  function_name    = aws_lambda_function.process_order_lambda.arn
 }
 
 resource "aws_lambda_event_source_mapping" "update_stock_trigger" {
   event_source_arn = aws_sqs_queue.stock_queue.arn
-  function_name   = aws_lambda_function.update_stock_lambda.arn
+  function_name    = aws_lambda_function.update_stock_lambda.arn
 }
 
 # DynamoDB tables
 resource "aws_dynamodb_table" "customer_order_table" {
-  name           = "CustomerOrders"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "order_id"
+  name         = "CustomerOrders"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "order_id"
   attribute {
     name = "order_id"
     type = "N"
@@ -185,9 +185,9 @@ resource "aws_dynamodb_table" "customer_order_table" {
 }
 
 resource "aws_dynamodb_table" "product_info_table" {
-  name           = "ProductsInfo"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "product_id"
+  name         = "ProductsInfo"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "product_id"
   attribute {
     name = "product_id"
     type = "N"
@@ -207,17 +207,17 @@ resource "aws_api_gateway_resource" "order_resource" {
 }
 
 resource "aws_api_gateway_method" "get_customer_orders_method" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.order_resource.id
-  http_method   = "GET"
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.order_resource.id
+  http_method = "GET"
 
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_method" "create_order_method" {
-  rest_api_id   = aws_api_gateway_rest_api.my_api.id
-  resource_id   = aws_api_gateway_resource.order_resource.id
-  http_method   = "POST"
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.order_resource.id
+  http_method = "POST"
 
   authorization = "NONE"
 }
@@ -229,8 +229,8 @@ resource "aws_api_gateway_integration" "get_customer_orders_integration" {
   http_method = aws_api_gateway_method.get_customer_orders_method.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = aws_lambda_function.get_customer_orders_lambda.invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.get_customer_orders_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_integration" "create_order_integration" {
@@ -239,25 +239,25 @@ resource "aws_api_gateway_integration" "create_order_integration" {
   http_method = aws_api_gateway_method.create_order_method.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = aws_lambda_function.create_order_lambda.invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.create_order_lambda.invoke_arn
 }
 
 
 # Deploy the API
 resource "aws_api_gateway_deployment" "my_api_deployment" {
-  depends_on       = [aws_api_gateway_integration.get_customer_orders_integration, aws_api_gateway_integration.create_order_integration]
-  rest_api_id      = aws_api_gateway_rest_api.my_api.id
-  stage_name       = "prod"  # You can change this to your desired stage name
-  description      = "Production Deployment"
-  variables        = {}  # Optional. You can define stage variables here.
+  depends_on  = [aws_api_gateway_integration.get_customer_orders_integration, aws_api_gateway_integration.create_order_integration]
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  stage_name  = "prod" # You can change this to your desired stage name
+  description = "Production Deployment"
+  variables   = {} # Optional. You can define stage variables here.
 }
 
 # Create the stage
 resource "aws_api_gateway_stage" "my_api_stage" {
-  stage_name      = aws_api_gateway_deployment.my_api_deployment.stage_name
-  rest_api_id     = aws_api_gateway_deployment.my_api_deployment.rest_api_id
-  deployment_id   = aws_api_gateway_deployment.my_api_deployment.id
+  stage_name    = aws_api_gateway_deployment.my_api_deployment.stage_name
+  rest_api_id   = aws_api_gateway_deployment.my_api_deployment.rest_api_id
+  deployment_id = aws_api_gateway_deployment.my_api_deployment.id
 
   # Additional stage configurations, if needed
 }
@@ -267,18 +267,10 @@ resource "aws_secretsmanager_secret" "dynamo_secret" {
   name = "prod/dynamo"
 }
 
-variable "access_key" {
-  default = os.getenv("AWS_ACCESS_KEY_ID")
-}
-
-variable "secret_key" {
-  default = os.getenv("AWS_SECRET_ACCESS_KEY")
-}
-
 resource "aws_secretsmanager_secret_version" "dynamo_secret_version" {
   secret_id = aws_secretsmanager_secret.dynamo_secret.id
   secret_string = jsonencode({
-    "access_key" = var.access_key,
-    "secret_key" = var.secret_key
+    "access_key" = "YOUR_ACCESS_KEY",
+    "secret_key" = "YOUR_SECRET_KEY"
   })
 }
