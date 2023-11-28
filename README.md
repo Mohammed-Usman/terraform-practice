@@ -1,5 +1,3 @@
-# terraform-practice
-
 # Files in the Directory
 
 - Root
@@ -29,7 +27,7 @@
 
 
 ### Step 2 :
-ALl AWS resources are created in 'ap-south-1' region.
+All AWS resources are created in 'ap-south-1' region.
 ```
 cd Infrastructure
 open deployement.tf
@@ -48,7 +46,7 @@ python zipping_lambdas.py
 ```
 
 ### Step 4 :
-- Make sure all resources are created in 'ap-south-1', if desired region is different replace all occurance ( in .py and .tf files ) with your desired region
+- Make sure all resources are created in 'ap-south-1', if desired region is different replace all occurance ( in .py and .tf files ) with your desired region and repeat Step #3.
 - Run following commands
 ```
 terraform plan -out=tfplan
